@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block pagetitle %} All Categories {% endblock %}
+
+{% block content%}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-4 bg-white">
+                <h2>Categories</h2>
+                <ul class="custom-list">
+                    {% for category in categories %}
+                        <li>{{category.name}}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-xs-8 bg-white">
+                <h2>Latest Items</h2>
+                <ul class="custom-list">
+                    {% for latestItem in latestItems %}
+                        <li>{{latestItem.name}} ({{latestItem.category.name}}) - {{latestItem.creator_email}}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <!-- <div class="row">
+            <div class="col-xs-12">
+                {% if 'username' in login_session %}
+                    <a href="{{url_for('createItem')}}">Add Item</a>
+                {% endif %}
+            </div>
+        </div> -->
+    </div>
+
+{% endblock %}

@@ -75,6 +75,7 @@ class Item(Base):
             'id': self.id,
         }
 
+
 if __name__ == '__main__':
     from sqlalchemy import create_engine
     engine = create_engine('sqlite:///categorylist.db')
