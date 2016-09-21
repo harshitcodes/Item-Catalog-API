@@ -18,7 +18,7 @@
     <div class=" collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav navbar-right">
 
-          {% if user %}
+          {% if logged_in_user_id %}
             <li><a href="/logout">Sign Out</a></li>
           {% else %}
             <li><a href="/login">Sign In</a></li>
