@@ -70,7 +70,7 @@ addItem('Bat', 'Really cool baseball bat', baseball, 1)
 addItem('Goggles', 'Protect your eyes with these goggles', snowboarding, 1)
 addItem('Snowboard', 'Cool snowboard', snowboarding, 1)
 addItem('Shinguards', 'Protect your shins with these guards', soccer, 1)
-addItem('Jersey', 'Look like a pro with this jersey', soccer, '')
+addItem('Jersey', 'Look like a pro with this jersey', soccer, 1)
 print
 
 # display current state of the db as a sanity check

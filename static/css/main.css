@@ -1,3 +1,12 @@
+body{
+    background-color: #f6f6f6;
+}
+
+.category-list {
+    list-style-type: none;
+    color: #999999;
+    padding-left: 0;
+}
 /*navbar css =========================================================*/
 #my-nav{
     background-color: #00796b;
@@ -35,7 +44,7 @@
 }
 
 #bottom-bar{
-    background-color: #f6f6f6;
+    background-color: #00796b;
     height: 40px;
     position: absolute;
     bottom: 0px;
@@ -50,4 +59,22 @@
 }
 .row a{
     color: initial;
+}
+.btn{
+    background-image: none;
+    background-color: #00796b;
+    color: #fff!important;
+}
+.form-control{
+    width: 50%;
+}
+
+
+.category-list li{
+    border: 1px solid #00796b;
+    line-height: 2.2;
+    text-align: center;
+    background-color: #d6d4d0;
+    border-radius: 3px;
+    font-size: 22px;
 }

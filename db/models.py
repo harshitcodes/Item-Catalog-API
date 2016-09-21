@@ -63,7 +63,7 @@ class Item(Base):
     category = relationship(Category)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
-    image_url = Column(String(250))
+    image_url = Column(String(250), nullable=True)
     created = Column(DateTime, nullable=False)
 
     @property

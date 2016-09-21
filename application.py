@@ -53,8 +53,8 @@ def showLogin():
     """
     Show the login page
     """
-    print "login"
-    if 'username' in login_session:
+
+    if 'gplus_id' in login_session:
         return redirect(url_for('allcategories'))
 
     # Create anti-forgery state token(csrf token)
@@ -180,13 +180,13 @@ def gdisconnect():
     """
     # Only disconnect a connected user.
     credentials = login_session.get('credentials')
+    print login_session
     if credentials is None:
         response = make_response(
             json.dumps('Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
-    access_token = credentials.access_token
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % credentials
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
 
@@ -197,7 +197,7 @@ def gdisconnect():
         del login_session['username']
         del login_session['email']
         del login_session['picture']
-        return redirect(url_for('showCataglog'))
+        return redirect(url_for('allcategories'))
     else:
         # For whatever reason, the given token was invalid.
         response = make_response(
@@ -241,38 +241,68 @@ def getUserID(email):
 def allcategories():
     '''lists all the categories in the dataabase'''
     categories = session.query(Category).all()
+    logged_in_user_id = getUserID(login_session.get('email'))
+    print logged_in_user_id
     print categories
-    recent_items = session.query(Item).order_by(Item.created.desc()).limit(3)
+    recent_items = session.query(Item).order_by("created").limit(3)
     return render_template('all_categories.html', categories=categories,
-                           recent_items=recent_items)
+                           recent_items=recent_items,
+                           logged_in_user_id=logged_in_user_id)
 
 
-@app.route('/catalog/<string:category_name>/')
-@app.route('/catalog/<string:category_name>/items/')
-def showItemsInCategory(category_name):
+@app.route('/catalog/<int:category_id>/')
+@app.route('/catalog/<int:category_id>/items/')
+def showItemsInCategory(category_id):
     '''shows all items in a given category'''
     try:
-        items = session.query(Item).filter_by(category_name=category_name).all()  # noqa
+        category = session.query(Category).filter_by(id=category_id).one()
+        items = session.query(Item).filter_by(category_id=category_id).all()  # noqa
+        logged_in_user_id = getUserID(login_session.get('email'))
         categories = session.query(Category).all()
         return render_template('showItemsInCategory.html',
-                               category_name=category_name, items=items,
+                               category=category, items=items,
                                categories=categories,
-                               login_session=login_session)
+                               logged_in_user_id=logged_in_user_id)
     except NoResultFound:
         abort(404)
 
 
-@app.route('/catalog/<string:category_name>/<string:item_name>/')
-def showItem(category_name, item_name):
+@app.route('/catalog/<int:item_id>/')
+def showItem(item_id):
     '''displays a single item in a category'''
     try:
-        item = session.query(Item).filter_by(name=item_name,
-                                             category_name=category_name).one()
+        logged_in_user_id = getUserID(login_session.get('email'))
+        item = session.query(Item).filter_by(id=item_id).one()
         return render_template('showItem.html',
-                               category_name=category_name, item=item,
-                               login_session=login_session)
+                               item=item,
+                               logged_in_user_id=logged_in_user_id)
     except NoResultFound:
         abort(404)
+
+
+@app.route('/catalog/category/create/', methods=['GET', 'POST'])
+def createCategory():
+    '''handler for creating new categories'''
+    if 'username' not in login_session:
+        return redirect('/login')
+    logged_in_user_id = getUserID(login_session.get('email'))
+    if request.method == 'POST':
+        # retreiving form value
+        new_category_name = request.form['name'].title()
+        print new_category_name
+
+        try:
+            category = session.query(Category).filter_by(name=new_category_name).one()
+            msg = "The Category %s already exists" % new_category_name
+            return render_template('new_category.html', msg=msg, logged_in_user_id=logged_in_user_id)
+        except NoResultFound:
+            category = Category(name=new_category_name, user_id=logged_in_user_id)
+            session.add(category)
+            session.commit()
+            return redirect(url_for('allcategories'))
+    else:
+        return render_template('new_category.html',
+                               logged_in_user_id=logged_in_user_id)
 
 
 @app.route('/catalog/items/create/', methods=['GET', 'POST'])
@@ -280,14 +310,14 @@ def createItem():
     '''creating a new item'''
     if 'username' not in login_session:
         return redirect('/login')
-
     logged_in_user_id = getUserID(login_session.get('email'))
     if request.method == 'POST':
-        # retreiving form value
+
         new_item = Item(name=request.form['name'],
                         description=request.form['description'],
                         category_id=request.form['category_id'],
-                        user_id=logged_in_user_id)
+                        user_id=logged_in_user_id,
+                        created=datetime.now())
         session.add(new_item)
         flash('Item %s successfully created' % new_item.name)
         session.commit()
@@ -321,10 +351,10 @@ def editItem(item_id):
         session.commit()
         flash('Item %s Successfully Edited' % edit_item.name)
         session.commit()
-        return redirect(url_for('showCatalog'))
+        return redirect(url_for('allcategories'))
     else:
         categories = session.query(Category).all()
-        return render_template('edititem.html', categories=categories,
+        return render_template('edit_item.html', categories=categories,
                                logged_in_user_id=logged_in_user_id,
                                item=edit_item)
 
