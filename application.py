@@ -60,7 +60,6 @@ def showLogin():
     # Create anti-forgery state token(csrf token)
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
-    print state
     # storing in  the session for verification ahead
     login_session['state'] = state
     # return "The current session state is %s" % login_session['state']
@@ -74,14 +73,12 @@ def gconnect():
     Uses google authentication
     '''
     # access token validation
-    print "in gconnect"
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
     # retrieving authorization code
     code = request.data
-    print "code is %s" % code
 
     try:
         # from authorization code into a credential object
@@ -158,7 +155,6 @@ def gconnect():
     output += login_session['picture']
     output += ' " style = "width: 300px; height: 300px; border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
     flash("you are now logged in as %s" % login_session['username'])
-    print output
     return output
 
 
@@ -180,7 +176,6 @@ def gdisconnect():
     """
     # Only disconnect a connected user.
     credentials = login_session.get('credentials')
-    print login_session
     if credentials is None:
         response = make_response(
             json.dumps('Current user not connected.'), 401)
@@ -242,8 +237,6 @@ def allcategories():
     '''lists all the categories in the dataabase'''
     categories = session.query(Category).all()
     logged_in_user_id = getUserID(login_session.get('email'))
-    print logged_in_user_id
-    print categories
     recent_items = session.query(Item).order_by("created").limit(3)
     return render_template('all_categories.html', categories=categories,
                            recent_items=recent_items,
@@ -289,7 +282,6 @@ def createCategory():
     if request.method == 'POST':
         # retreiving form value
         new_category_name = request.form['name'].title()
-        print new_category_name
 
         try:
             category = session.query(Category).filter_by(name=new_category_name).one()
