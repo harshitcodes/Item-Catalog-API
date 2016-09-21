@@ -372,6 +372,25 @@ def deleteItem(item_id):
     return redirect('/')
 
 
+@app.route('/catalog.json')
+def getCatalogJson():
+    '''returns a JSON containing all categories and items'''
+    result = {}
+    categories = session.query(Category).all()
+    for category in categories:
+        result[category.name] = {}
+        result[category.name]['user_id'] = category.user_id
+        result[category.name]['items'] = []
+        items = session.query(Item).filter_by(name=category.name).all()
+        for item in items:
+            result[category.name]['items'].append({
+                'name': item.name,
+                'description': item.description,
+                'creation_time': item.created,
+                'user_id': item.user_id
+            })
+    return jsonify(result)
+
 @app.errorhandler(404)
 def page_not_found(e):
     '''handler function for status 404'''
